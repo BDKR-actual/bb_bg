@@ -1,0 +1,3 @@
+dirs: ~/Downloads/older
+interval: 90
+monitors: 2
