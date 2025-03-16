@@ -21,7 +21,7 @@ Rust, it works using Cinnamon, WAS (altered the logic in main) working for Fluxb
 Something to note here... Cinnamon uses a tool called Nitrogen to set backgrounds. Expensive (LOL), but powerful. It, by itself can do most of what this little application can do. BUT IT IS EXPENSIVE! 
 THIS IS A WARNING! Setting low intervals (less than 10 seconds) while on Cinnamon (using Nitrogen) will affect how responsive your system is, or stops being. Over 10 seconds should be fine, but your 
 system is likely different than mine so your mileage may vary. I'm running this on a refurb'ed Dell T3600 Workstation with 32gigs and 6 cores. With memory usage as low as 6gb, I'm seeing affects on 
-system responsiveness when running intervals lass than 10 seconds. So don't do it. You've been warned. :-)
+system responsiveness when running intervals less than 10 seconds. So don't do it. You've been warned. :-)
 
 Usage is simple. Here is the help output:
 
@@ -75,7 +75,7 @@ This currently works with 1.85.0.
 ## In closing
 
 I hope this is fun for you. I enjoy it. I initially wrote this because too me it's cool to be spun on coffee and write code in a transparent terminal with the background changing every minute or so. 
-Cool musing playing, cool code being written, and cool pics of cars, bikes, planes, or peeps cycling in the background. 
+Cool music playing, cool code being written, and cool pics of cars, bikes, planes, or peeps cycling in the background. 
 
 Drop me a line! :-)\
 Cheers
