@@ -14,7 +14,7 @@ included but not yet used. Uncommenting "![allow(unsused)]" will
 let you see what's extra.
 ******************************************************** */
 #![allow(unused)]
-// #![allow(deprecated)]
+#![allow(deprecated)]
 #![warn(non_camel_case_types)]
 
 extern crate envmnt;
