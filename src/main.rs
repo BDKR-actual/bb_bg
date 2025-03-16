@@ -21,10 +21,10 @@ extern crate envmnt;
 extern crate getopts;
 extern crate rand;              // For shuffling the image vector
 
+use crate::rand::Rng;
 use std::slice::Iter;
 use getopts::Options;
 use memory_stats::memory_stats;
-use rand::Rng;
 use std::char;
 use std::collections::HashMap;
 use std::env;
@@ -32,7 +32,7 @@ use std::fs;					// For reading directories
 use std::fmt;
 use std::fmt::Display;			// For pretty printing debug output
 use std::process::{Command};	// For executing commands
-use std::time::Duration;		// For pausing the application
+use std::time::Duration;		// For pausing the application / sleep
 use std::io::{Write, stderr};
 use std::iter;
 use std::iter::Enumerate;
@@ -56,6 +56,8 @@ use bb_bg::bgset::config;       // Config related shizzle. The big one being tha
 
 const DEV_DEBUG: i8 = 1;
 
+
+
 fn main()
 	{
 	/* Setup */
@@ -69,6 +71,7 @@ fn main()
 	let mut conf_data: HashMap<String, String> 	= HashMap::new();// I guess 'into()' converts HashMap::new into the targeted Rc type
 	let tmp_i: u8								= 0;
 	let mut conf_interval: u32					= 0;
+	// let mut rng									= rand::rng();
 
 	/* Some expect error string to have setup already */
 	let img_dir_err: String						="Expecting a string representing one or more image directories.".to_string();
@@ -184,14 +187,15 @@ fn main()
 		match &fnl_cmd
 			{
 			nitrogen	=> { bb_bg::bgset::nitrogen::work(&mut imgs, &mut bg_args) },
-			wmsetbg		=> { bb_bg::bgset::wmsetbg::set_bkg(&bg_args) },
-			plasma		=> { bb_bg::bgset::plasma::set_bkg(&bg_args) }					// Untested
+			wmsetbg		=> { bb_bg::bgset::wmsetbg::set_bkg(&bg_args) },				// Needs finishing and testing
+			plasma		=> { bb_bg::bgset::plasma::set_bkg(&bg_args) }					// Needs finishing and testing
 			}
 
 		/* Our interval : This is now taken care of in the modules */
 		// thread::sleep(Duration::from_secs(opt_data.interval as u64));
 		// imgs_innr.clear();				// Empty the vector for rebuilding.
-		*loop_cntr += 1;				// This is de-referenced. Learn more on this!
+
+		*loop_cntr += 1;				// This is de-referenced. 
 		}
 	}
 
