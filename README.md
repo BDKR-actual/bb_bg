@@ -49,7 +49,7 @@ the config file is the "-i" argument. With this argument you can specify that im
 
 >bb_bg -t 15 -i vel
 
-The above command will change the background every 15 seconds and only use images where the name matches (in some way) the search term "vel" (for [Vel Sartha](https://duckduckgo.com/?t=h_&q=vel+sartha&iax=images&ia=images)). 
+The above command will change the background every 15 seconds and only use images where the name matches (in some way) the search term "vel" (for [Vel Sartha](https://duckduckgo.com/?t=h_&q=vel+sartha&iax=images&ia=images) in this case). 
 The match is fuzzy so you don't have to know the exact name of the image or match case. Image titles like VeL_s_01.png will be matched when using "VEL", "vel", or even "vE". "Ve" is likely to match more than 
 you were interested in however. 
 
