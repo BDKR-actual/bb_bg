@@ -1,0 +1,28 @@
+[package]
+name = "bb_bg"
+version = "0.1.0"
+authors = ["bdkr"]
+edition = "2018"
+
+[dependencies]
+scan_dir = "0.3.3"
+rand = "0.6"
+getopts = "0.2.18"
+envmnt = "0.6.0"
+# dirs = "1.0.5"
+dirs = "2.0"
+system = "0.3.3"
+libc = "0.2.159"
+memory-stats = "1.2.0"
+
+[profile.release]
+opt-level = 3
+debug = false
+rpath = false
+lto = true
+debug-assertions = false
+codegen-units = 16
+panic = 'unwind'
+incremental = false
+overflow-checks = false
+# libc = "0.2"
