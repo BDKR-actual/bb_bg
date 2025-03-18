@@ -5,7 +5,7 @@ use getopts::Options;
 use std::collections::HashMap;
 use std::convert::From;
 use std::fs::File;
-use std::fs;
+use std::fs::exists;
 use std::env;
 use std::io::prelude::*;
 use std::path::PathBuf;
@@ -18,6 +18,40 @@ use std::{
 };
 use std::string::String;
 use system::system_output;
+
+const CONFIG_PATH: &str = "/.config/bb_bg/config";
+
+/* Check if the person is running as root AND that a config file exists. */
+pub fn can_run(home_dir: &String) -> bool
+	{
+	/* Quick setup */
+	let mut ret_val = true;
+
+	/* Check if this is running as root */
+	if(home_dir == "/root")
+		{
+		println!("It appears you are running as root!\nExiting!");
+		process::exit(1);
+		}
+
+	/* Now check if the config file exists */
+	let fe = exists(home_dir.to_owned()+CONFIG_PATH);
+	match(fe)
+		{
+		Ok(true)	=> ret_val = true,
+		Ok(false)	=> ret_val = false,
+		Err(..)		=> ret_val = false
+		};
+
+	if(ret_val==false)
+		{
+		println!("\nThere is no config file. Refer to the readme for how to create one.\nExiting!\n");
+		process::exit(1);
+		return false;
+		}
+
+	ret_val
+	}
 
 
 /* This is really a sub-function of read_config. Does as named and returns the file by lines in a vector */

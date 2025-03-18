@@ -16,7 +16,6 @@ let you see what's extra.
 #![allow(unused)]
 #![allow(deprecated)]
 #![warn(non_camel_case_types)]
-
 extern crate envmnt;
 extern crate getopts;
 extern crate rand;              // For shuffling the image vector
@@ -54,7 +53,13 @@ use bb_bg::bgset::plasma;		// For use with KDE Plash
 use bb_bg::bgset::img_scan;     // Scan the images. Make sure they are. Filter based on search term if requested.
 use bb_bg::bgset::config;       // Config related shizzle. The big one being that this is where the config file is read.
 
-const DEV_DEBUG: i8 = 1;
+/* Some constants to setup */
+const DEV_DEBUG: 	i8 			= 1;
+const IMG_DIR_ERR:	&str		="Expecting a string representing one or more image directories.";
+const BG_EX_ERR: 	&str		="Error getting the name of the process that sets the background image. Check the config file!";
+const INTVL_ERR: 	&str		="Interval data is either not alpha-numeric or missing. Check the config file!";
+const HD_ERR:		&str		="Number of heads (monitors) missing or malformed. Check the config file!";
+const DBG_ERR: 		&str		="The debug entry is either missing or malformed. Check the config file!";
 
 
 
@@ -65,42 +70,35 @@ fn main()
 	let mut fnl_img_dir 						= "".to_string();	    // Setup the image directory string
 	let mut fnl_cmd								= "".to_string();	    // What command will be used later
 	let mut opt_data	 						= match_args();		    // Let's look at the command line arguments
-	let mut imgs_otr: Vec<String>				= vec![];				// vec![] is a macro! Learn about it! Images are stored here
+	let mut imgs_otr: Vec<String>				= vec![];				// Images are stored here
 	let mut rng_otr 							= rand::thread_rng();
 	let mut otr_cntr: u32						= 0;
-	let mut conf_data: HashMap<String, String> 	= HashMap::new();// I guess 'into()' converts HashMap::new into the targeted Rc type
+	let mut conf_data: HashMap<String, String> 	= HashMap::new();		// I guess 'into()' converts HashMap::new into the targeted Rc type
 	let tmp_i: u8								= 0;
 	let mut conf_interval: u32					= 0;
-	// let mut rng									= rand::rng();
 
-	/* Some expect error string to have setup already */
-	let img_dir_err: String						="Expecting a string representing one or more image directories.".to_string();
-	let bg_ex_err: String						="Error getting the name of the process that sets the background image. Check the config file!".to_string();
-	let intvl_err: String						="Interval data is either not alpha-numeric or missing. Check the config file!".to_string();
-	let hd_err:	String							="Number of heads (monitors) missing or malformed. Check the config file!".to_string();
-	let dbg_err: String							="The debug entry is either missing or malformed. Check the config file!".to_string();
+	/* Is the config file there? Someone running this as root? */
+    bb_bg::bgset::config::can_run(&home_dir);							// The program will exit here if things aren't set
 
 	// let mut bg_args = &mut bb_bg::bgset::bgset_args
 	let mut bg_args = bb_bg::bgset::bgset_args
 		{
 		heads:		0,
-		img_path:	"".to_string(),
-		img_paths:	vec![],
-        show_debug: 0,
-		interval:	0
+		img_path:	"".to_string(),		img_paths:	vec![],
+        show_debug: 0,					interval:	0
 		};
 
 	/* Now let's read the config file and mess around with the interval element */
     bb_bg::bgset::config::read_config(opt_data.clone(), &mut conf_data);
-	conf_interval					= conf_data.get("INTERVAL").clone().expect(&intvl_err).to_string().parse().unwrap();
+	conf_interval					= conf_data.get("INTERVAL").clone().expect(&INTVL_ERR).to_string().parse().unwrap();
 
 	/* Check if an image directory was passed at the command line */
 	if(opt_data.directory.len()>0)	{ fnl_img_dir = opt_data.directory.clone(); }
-	else							{ fnl_img_dir = conf_data.get("DEF_IMG_DIR").expect(&img_dir_err).to_string(); }
+	else							{ fnl_img_dir = conf_data.get("DEF_IMG_DIR").expect(&IMG_DIR_ERR).to_string(); }
 
 	/* Let's do the same as above for commands */
 	if(opt_data.cmd.len()>0)		{ fnl_cmd = opt_data.cmd.clone(); }
-	else							{ fnl_cmd = conf_data.get("BG_EX").expect(&bg_ex_err).to_string(); }
+	else							{ fnl_cmd = conf_data.get("BG_EX").expect(&BG_EX_ERR).to_string(); }
 
 	/* Check the interval */
 	if(opt_data.interval==0 && conf_interval > 0)
@@ -112,8 +110,8 @@ fn main()
 		{ bg_args.interval			= opt_data.interval; }
 
 	/* Yet more */
-	bg_args.heads					= conf_data.get("HEADS").clone().expect(&hd_err).to_string().parse().unwrap();			// Number of heads (monitors).
-	bg_args.show_debug				= conf_data.get("SHOW_DBG").clone().expect(&dbg_err).to_string().parse().unwrap();		// Debug output?
+	bg_args.heads					= conf_data.get("HEADS").clone().expect(&HD_ERR).to_string().parse().unwrap();			// Number of heads (monitors).
+	bg_args.show_debug				= conf_data.get("SHOW_DBG").clone().expect(&DBG_ERR).to_string().parse().unwrap();		// Debug output?
 
 	/* Before going any further, let's check if we have the command line tools we need */
     /* The program will exit with a message in this function if there is a problem */
@@ -134,8 +132,8 @@ fn main()
 		{
 		/* Let's bring something things inside of the scope for this loop */
 		let loop_cntr	= &mut otr_cntr;
-		let imgs_innr 	= &mut imgs_otr;			// Borrowed form line 57 above by referrence
-		let rng 		= &mut rng_otr;				// Just like the line above but from line 58
+		let imgs_innr 	= &mut imgs_otr;
+		let rng 		= &mut rng_otr;
 
 		/* Check if we got more than one directory */
 		if fnl_img_dir.contains(",")
@@ -195,7 +193,7 @@ fn main()
 		// thread::sleep(Duration::from_secs(opt_data.interval as u64));
 		// imgs_innr.clear();				// Empty the vector for rebuilding.
 
-		*loop_cntr += 1;				// This is de-referenced. 
+		*loop_cntr += 1;
 		}
 	}
 
