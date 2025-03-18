@@ -1,0 +1,7 @@
+
+DEF_IMG_DIR :   ~/img/dir/1,~/img/dir/2,/home/you/pics
+BG_EX       :   nitrogen
+HEADS       :   2
+INTERVAL    :   90
+SHOW_DBG    :   0
+
