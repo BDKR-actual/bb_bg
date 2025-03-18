@@ -44,8 +44,17 @@ INTERVAL    :   90
 SHOW_DBG    :   0
 ```
 
-As you are are likely pretty smart (since you've read this far), it's prolly obvious that the app will use config file settings unless you specify them as arguments. The only thing not represented in 
-the config file is the "-i" argument. With this argument you can specify that images that match a search string will be used. 
+Yes, you need to create the file and store it at the location mentioned above. You could copy the example above as the contents of the file. There is also a 
+config.example file that can be saved to the target directory. Note the "~" at the start of those paths. Those are not required and probably better not used if you don't 
+understand what they are. The last thing concerning the directory entries is that there should be no spaces around the commas. 
+
+BG_EX is important. The options are nitrogen, wmsetbg, and plasma. At this time, wmsetbg and plasma have been changed or are not complete. That work is going on now. They 
+may actually work, but it is not garuanteed. 
+
+If the config file isn't present, the application will exit. 
+
+As you are are likely pretty smart (since you've read this far), it's prolly obvious that the app will use config file settings unless you specify them as arguments. The 
+only thing not represented in the config file is the "-i" argument. With this argument you can specify that images that match a search string will be used. 
 
 >bb_bg -t 15 -i vel
 
@@ -70,6 +79,11 @@ That said, here it is, but just a little ahead of schedule. There are still some
 
 This currently works with 1.85.0. 
 
+Lastly, there is a .deb file that can be used to install. The command is...
+
+```dpkg -i bb_bg*.deb```
+
+I've not tested this across a lot of platforms so I would appreciate feedback / error output. 
 
 
 ## In closing

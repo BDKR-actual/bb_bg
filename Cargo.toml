@@ -1,8 +1,11 @@
 [package]
 name = "bb_bg"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["bdkr"]
-edition = "2018"
+edition = "2024"
+license = "Apache 2.0"
+description = "A tool to control rotation of desktop background images."
+homepage= "https://github.com/BDKR-actual/bb_bg" 
 
 [dependencies]
 scan_dir = "0.3.3"
