@@ -9,7 +9,6 @@ First off, please be kind. This is my first bit of code in Rust. I'm totally gam
 don't like that, here is some [help](https://www.therapyden.com/).
 
 
-
 ## So what is BlackBox Background? 
 
 This is something I originally wrote a long time ago ('02 I think) in PHP. And again in Python and Ruby. What it does is loop over a list of images and resets the desktop background at a specified 
@@ -29,7 +28,7 @@ Usage is simple. Here is the help output:
 Options:
     -h, --help          Print this help menu
     -d, --directories Full path to image directoy. Seperate multiple directories with a comma.
-    -c, --cmd Output mechanism... wmsetbg or nitrogen. Nitrogen for Ubuntu. Wmsetbg for Fluxbox, Blackbox, and Windowmaker 
+    -c, --cmd Output mechanism... Nitrogen for Cinnamon. Wmsetbg for Fluxbox, Blackbox, and Windowmaker. Plasma for KDE Plasma. All lower case!
     -t, --time This is the interval between image changes
     -i, --images Search for images matching name provided
 ```
@@ -48,8 +47,7 @@ Yes, you need to create the file and store it at the location mentioned above. Y
 config.example file that can be saved to the target directory. Note the "~" at the start of those paths. Those are not required and probably better not used if you don't 
 understand what they are. The last thing concerning the directory entries is that there should be no spaces around the commas. 
 
-BG_EX is important. The options are nitrogen, wmsetbg, and plasma. At this time, wmsetbg and plasma have been changed or are not complete. That work is going on now. They 
-may actually work, but it is not garuanteed. 
+BG_EX is important. The options are nitrogen, wmsetbg, and plasma. Not too interested in doing any others but we can add the functionality here if you write it. 
 
 If the config file isn't present, the application will exit. 
 
@@ -63,27 +61,34 @@ The match is fuzzy so you don't have to know the exact name of the image or matc
 you were interested in however. 
 
 
-
 ## So where are we?
 
-Well I'm putting this on github before I wanted to. My intent was to finish the Plasma module,  but it turns out some recruiters don't think you are serious if you don't have a github and code shizzle in it. 
-
-That said, here it is, but just a little ahead of schedule. There are still some issue that I'm listing below. Feel free to consider this a rough analog for a todo list. 
+There are still some issues/updates that I'm listing below. Feel free to consider this a rough analog for a todo list. 
 
 * Main is too big. 
-* There is a loop in main that I don't think is needed anymore. The loop itself is moved into the modules. See the nitrogen.rs file (nitrogen::work).
-* The wmsetbg and plasma work() methods need writing. 
+* In the last release, the need for the loop in main was in question. That's sorted now. It remains as it supports automatic inclusion of new images that may have been added while the prog was running. When the module exhausts it's list of images, it breaks back out to main where the new image will be found. 
+* The Windowmaker, BlackBox, FluxBox, and KDE Plasma window managers are now supported / working. 
 * Allow deprecation is on for now. Still using rand::Rng::shuffle for now. Plan is to write the work methods for wmsetbg and plasma first.
-* The help output needs to be updated to account for the inclusion of KDE Plasma. 
-* An installer? 
+* If you don't want to compile this yourself, I've included a .deb file. 
 
 This currently works with 1.85.0. 
 
-Lastly, there is a .deb file that can be used to install. The command is...
+To install via the Debian package file, the command is...
 
 ```dpkg -i bb_bg*.deb```
 
 I've not tested this across a lot of platforms so I would appreciate feedback / error output. 
+
+
+## Dependencies
+
+This program actually requires the services of some other scripts to effectuate the desktop background changes. For the supported window managers those are...
+
+* wmsetbg:		Choose this one if using BlackBox, FluxBox, or Window Maker. 
+* nitrogen:		If you are Cinnamon, this is your choice. Take note of the "heads" option in the config file. This is the number of monitors you have. Setting this to that number will result in using a different image on each monitor. Set to 1 if you don't want this. Also, I only tested this on my system with two monitors. If you have more than 2 and see some strange behavior drop me a note and let me know about it. 
+* plasma:		This is the option to choose if using KDE Plasma. But this one has a surprise. The backend tool that's actually being used is called [ksetwallpaper](https://github.com/pashazz/ksetwallpaper). Download it and install it in /usr/local/bin as "ksetwallpaper". Remove the ".py" from the end. Make sure it's executable and has it's [bam line or shebang line](https://en.wikipedia.org/wiki/Shebang_(Unix)). 
+
+The above are the options that you would enter either at the command line via -c or what's set for the BG_EX option in the config file. 
 
 
 ## In closing

@@ -10,6 +10,7 @@ pub struct bgset_args
 	pub img_paths:	Vec<String>,
 	pub show_debug: u8,
 	pub interval:	u32,
+	pub rebuild:	u8,				// Instruction to rebuild the image list is set here. Not used yet. 
     }
 
 /* We'll move option data around here */

@@ -4,12 +4,7 @@ examples. What this does is look at a directory full of images
 and loops over the contents as such setting each as a background
 for some period of time.
 
-In the version written in PHP, things like the directory, using
-images that match a search criteria, and the interval set are all
-configurable and/or can be passed in as arguments. Here, those
-things may come later as I learn more/get better with Rust.
-
-To that end, there are some external dependencies that are
+There are some external dependencies that are
 included but not yet used. Uncommenting "![allow(unsused)]" will
 let you see what's extra.
 ******************************************************** */
@@ -73,7 +68,7 @@ fn main()
 	let mut imgs_otr: Vec<String>				= vec![];				// Images are stored here
 	let mut rng_otr 							= rand::thread_rng();
 	let mut otr_cntr: u32						= 0;
-	let mut conf_data: HashMap<String, String> 	= HashMap::new();		// I guess 'into()' converts HashMap::new into the targeted Rc type
+	let mut conf_data: HashMap<String, String> 	= HashMap::new();		// Configuration data
 	let tmp_i: u8								= 0;
 	let mut conf_interval: u32					= 0;
 
@@ -83,7 +78,7 @@ fn main()
 	// let mut bg_args = &mut bb_bg::bgset::bgset_args
 	let mut bg_args = bb_bg::bgset::bgset_args
 		{
-		heads:		0,
+		heads:		0,					rebuild:	1,
 		img_path:	"".to_string(),		img_paths:	vec![],
         show_debug: 0,					interval:	0
 		};
@@ -135,6 +130,9 @@ fn main()
 		let imgs_innr 	= &mut imgs_otr;
 		let rng 		= &mut rng_otr;
 
+		/* Just for testing. Will go away */
+		println!("Just for testing... The loop_cnt val is {}.", loop_cntr);
+
 		/* Check if we got more than one directory */
 		if fnl_img_dir.contains(",")
 			{
@@ -182,23 +180,22 @@ fn main()
             }
 
 		/* Hand off the data set and arguments to the module */		
-		match &fnl_cmd
+		match fnl_cmd.as_str()
 			{
-			nitrogen	=> { bb_bg::bgset::nitrogen::work(&mut imgs, &mut bg_args) },
-			wmsetbg		=> { bb_bg::bgset::wmsetbg::set_bkg(&bg_args) },				// Needs finishing and testing
-			plasma		=> { bb_bg::bgset::plasma::set_bkg(&bg_args) }					// Needs finishing and testing
+			"nitrogen"		=> { bb_bg::bgset::nitrogen::work(&mut imgs, &mut bg_args) },
+			"plasma"		=> { bb_bg::bgset::plasma::work(&mut imgs, &mut bg_args) }		
+			"wmsetbg"		=> { bb_bg::bgset::wmsetbg::work(&mut imgs, &mut bg_args) },
+			 _ => println!("Shouldn't be here!"),
 			}
 
-		/* Our interval : This is now taken care of in the modules */
-		// thread::sleep(Duration::from_secs(opt_data.interval as u64));
-		// imgs_innr.clear();				// Empty the vector for rebuilding.
-
+		/* If we find ourselves back out here, we are looking to rebuild the image vectors. Empty them first! */
+		imgs_innr.clear();
+		imgs.clear();
 		*loop_cntr += 1;
 		}
 	}
 
 
-// fn print_usage(program: &str, opts: Options)
 fn print_usage(opts: Options)
     {
     let brief = format!("Usage: ");
@@ -211,7 +208,6 @@ fn print_usage(opts: Options)
 /* Using getopts, check the arguments and shove those into a struct */
 fn match_args() -> op_args
     {
-	// let mut ltr_arr = "h,d,c,t,i".split(',');
 	let _ltr_arr = "h,d,c,t,i".split(',');
     let mut opt_data = op_args
         {
@@ -228,8 +224,9 @@ fn match_args() -> op_args
 
 	/* Current methodology */
     opts.optflag("h", "help", "Print this help menu");
+    // opts.optopt("d", "directories", "", "Full path to image directoy. Seperate multiple directories with a comma.");
     opts.optopt("d", "directories", "", "Full path to image directoy. Seperate multiple directories with a comma.");
-    opts.optopt("c", "cmd", "", "Output mechanism... wmsetbg or nitrogen. Nitrogen for Ubuntu. Wmsetbg for Fluxbox, Blackbox, and Windowmaker");
+    opts.optopt("c", "cmd", "", "Output mechanism... Nitrogen for Cinnamon. Wmsetbg for Fluxbox, Blackbox, and Windowmaker. Plasma for KDE Plasma. All lower case!");
     opts.optopt("t", "time", "", "This is the interval between image changes");
     opts.optopt("i", "images", "", "Search for images matching name provided");
 

@@ -1,6 +1,6 @@
 [package]
 name = "bb_bg"
-version = "0.1.1"
+version = "0.1.5"
 authors = ["bdkr"]
 edition = "2024"
 license = "Apache 2.0"
@@ -24,7 +24,7 @@ debug = false
 rpath = false
 lto = true
 debug-assertions = false
-codegen-units = 16
+codegen-units = 8
 panic = 'unwind'
 incremental = false
 overflow-checks = false
