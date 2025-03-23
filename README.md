@@ -84,9 +84,9 @@ I've not tested this across a lot of platforms so I would appreciate feedback / 
 
 This program actually requires the services of some other scripts to effectuate the desktop background changes. For the supported window managers those are...
 
-* wmsetbg:		Choose this one if using BlackBox, FluxBox, or Window Maker. 
+* wmsetbg:		Choose this one if using BlackBox, FluxBox, or Window Maker. [Download here](https://www.windowmaker.org/docs/manpages/wmsetbg.html) in case it's not included when installing one of these window mangers, but that shouldn't be the case.
 * nitrogen:		If you are Cinnamon, this is your choice. Take note of the "heads" option in the config file. This is the number of monitors you have. Setting this to that number will result in using a different image on each monitor. Set to 1 if you don't want this. Also, I only tested this on my system with two monitors. If you have more than 2 and see some strange behavior drop me a note and let me know about it. 
-* plasma:		This is the option to choose if using KDE Plasma. But this one has a surprise. The backend tool that's actually being used is called [ksetwallpaper](https://github.com/pashazz/ksetwallpaper). Download it and install it in /usr/local/bin as "ksetwallpaper". Remove the ".py" from the end. Make sure it's executable and has it's [bam line or shebang line](https://en.wikipedia.org/wiki/Shebang_(Unix)). 
+* plasma:		This is the option to choose if using KDE Plasma. But this one has a surprise. The backend tool that's actually being used is called [ksetwallpaper](https://github.com/pashazz/ksetwallpaper). The surprise is that it doesn't appear to be included (in my distro at least). Download it and install it in /usr/local/bin as "ksetwallpaper". Remove the ".py" from the end. Make sure it's executable and has it's [bam line or shebang line](https://en.wikipedia.org/wiki/Shebang_(Unix)). 
 
 The above are the options that you would enter either at the command line via -c or what's set for the BG_EX option in the config file. 
 
