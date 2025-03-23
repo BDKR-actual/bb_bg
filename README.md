@@ -15,7 +15,7 @@ This is something I originally wrote a long time ago ('02 I think) in PHP. And a
 interval. And of course, there are arguments that allow specifying the interval and searching images based on search criteria. 
 
 At the time, I used Blackbox and Windowmaker window managers. They both use the [wmsetbg](https://www.windowmaker.org/docs/manpages/wmsetbg.html) tool for setting the background. Now with this version in 
-Rust, it works using Cinnamon, WAS (altered the logic in main) working for Fluxbox, Blackbox, and Windowmaker, and nearly finished for KDE Plasma. 
+Rust, it works using Cinnamon, Fluxbox, Blackbox, Windowmaker, and KDE Plasma. 
 
 Something to note here... Cinnamon uses a tool called Nitrogen to set backgrounds. Expensive (LOL), but powerful. It, by itself can do most of what this little application can do. BUT IT IS EXPENSIVE! 
 THIS IS A WARNING! Setting low intervals (less than 10 seconds) while on Cinnamon (using Nitrogen) will affect how responsive your system is, or stops being. Over 10 seconds should be fine, but your 
