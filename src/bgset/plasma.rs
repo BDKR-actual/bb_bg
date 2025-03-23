@@ -60,15 +60,10 @@ pub fn set_bkg(bginfo: &bgset_args)
     output.arg("--file");
     output.arg(&bginfo.img_path);
 
-	/* Conditional debug output */
-	// println!("{:?}", bginfo);
-	println!("{:?}\n", output);
-	// process::exit(1);
-
 	if(bginfo.show_debug==1) { println!("{:?}", output); }
     match output.output()
 		{
-       	Ok(o) => { unsafe { println!("{}", String::from_utf8_unchecked(o.stdout)); } },
+       	Ok(o) => { /* unsafe { println!("{}", String::from_utf8_unchecked(o.stdout)); } */ },
         Err(e)=> { println!("Somethings gone wrong in bgset::plasma! Error message is...\n\t \"{}\"", e); }
    	    }
 	}
