@@ -14,7 +14,6 @@ let you see what's extra.
 extern crate envmnt;
 extern crate getopts;
 extern crate rand;              // For shuffling the image vector
-
 use crate::rand::Rng;
 
 use anyhow::{Context, Result};
@@ -48,15 +47,15 @@ use bb_bg::bgset::wmsetbg;		// This supports Windowmake and Black Box
 use bb_bg::bgset::plasma;		// For use with KDE Plash
 use bb_bg::bgset::img_scan;     // Scan the images. Make sure they are. Filter based on search term if requested.
 use bb_bg::bgset::config;       // Config related shizzle. The big one being that this is where the config file is read.
+use bb_bg::bgutils::commands;	// 
 
 /* Some constants to setup */
-const DEV_DEBUG: 	i8 			= 1;
+const DEV_DEBUG: 	i8 			= 0;
 const IMG_DIR_ERR:	&str		="Expecting a string representing one or more image directories.";
 const BG_EX_ERR: 	&str		="Error getting the name of the process that sets the background image. Check the config file!";
 const INTVL_ERR: 	&str		="Interval data is either not alpha-numeric or missing. Check the config file!";
 const HD_ERR:		&str		="Number of heads (monitors) missing or malformed. Check the config file!";
 const DBG_ERR: 		&str		="The debug entry is either missing or malformed. Check the config file!";
-
 
 
 fn main() -> Result<(), anyhow::Error>
@@ -70,51 +69,25 @@ fn main() -> Result<(), anyhow::Error>
 	let mut rng_otr 							= rand::thread_rng();
 	let mut otr_cntr: u32						= 0;
 	let mut conf_data: HashMap<String, String> 	= HashMap::new();		// Configuration data
-	let mut conf_interval: u32					= 0;
-
-	/* Is the config file there? Someone running this as root? */
-    bb_bg::bgset::config::can_run(&home_dir);							// The program will exit here if things aren't set
-
-	/* Setup the bg_args dataset */
-	let mut bg_args = bb_bg::bgset::bgset_args
+	let mut bg_args = bb_bg::bgset::bgset_args							// Setup the bg_args dataset 
 		{
 		heads:		0,					rebuild:	1,
 		img_path:	"".to_string(),		img_paths:	vec![],
         show_debug: 0,					interval:	0
 		};
 
-	/* Read the config file */
-    bb_bg::bgset::config::read_config(opt_data.clone(), &mut conf_data);
-	
-	/* We need the loop interval */
-	conf_interval					= conf_data.get("INTERVAL").clone().expect(&INTVL_ERR).to_string().parse()?;
+	/* Get some real work done */
+	bb_bg::bgset::config::can_run(&home_dir);																	// Is the config file there? Someone running this as root?
+    bb_bg::bgset::config::read_config(opt_data.clone(), &mut conf_data);										// Read the config file 
+	let comm_list		= bb_bg::bgutils::commands::build_comm_strings(&opt_data, &conf_data);					// Generate our final dir and command strings and the interval value 
+	fnl_img_dir 		= comm_list[0].clone();																	// This and the next two lines finalize some commands and parameters
+	fnl_cmd				= comm_list[1].clone();
+	bg_args.interval	= comm_list[2].clone().parse().unwrap();
+	bg_args.heads		= conf_data.get("HEADS").clone().expect(&HD_ERR).to_string().parse().unwrap();			// Number of heads (monitors).
+	bg_args.show_debug	= conf_data.get("SHOW_DBG").clone().expect(&DBG_ERR).to_string().parse().unwrap();		// Debug output?
+	bb_bg::bgset::config::check_command(&fnl_cmd);																// Check if we have the command line tools we need. Exit if we don't.
 
-	/* Check if an image directory was passed at the command line */
-	if(opt_data.directory.len()>0)	{ fnl_img_dir = opt_data.directory.clone(); }
-	else							{ fnl_img_dir = conf_data.get("DEF_IMG_DIR").expect(&IMG_DIR_ERR).to_string(); }
-
-	/* Let's do the same as above for commands */
-	if(opt_data.cmd.len()>0)		{ fnl_cmd = opt_data.cmd.clone(); }
-	else							{ fnl_cmd = conf_data.get("BG_EX").expect(&BG_EX_ERR).to_string(); }
-
-	/* Check the interval */
-	if(opt_data.interval==0 && conf_interval > 0)
-		{
-		opt_data.interval			= conf_interval;																		// Should go away once all modules are changed.
-		bg_args.interval			= conf_interval;																		// This is the newer way. 
-		}
-	else
-		{ bg_args.interval			= opt_data.interval; }
-
-	/* Yet more */
-	bg_args.heads					= conf_data.get("HEADS").clone().expect(&HD_ERR).to_string().parse().unwrap();			// Number of heads (monitors).
-	bg_args.show_debug				= conf_data.get("SHOW_DBG").clone().expect(&DBG_ERR).to_string().parse().unwrap();		// Debug output?
-
-	/* Before going any further, let's check if we have the command line tools we need */
-    /* The program will exit with a message in this function if there is a problem */
-	bb_bg::bgset::config::check_command(&fnl_cmd);
-
-    /* Now get to work for real */
+    /* Load and filter images then set them to screen(s) */
 	loop
 		{
 		/* Let's bring something things inside of the scope for this loop */
@@ -133,8 +106,8 @@ fn main() -> Result<(), anyhow::Error>
 		/* Hand off the data set and arguments to the module responsible for putting images on the desktop */		
 		match fnl_cmd.as_str()
 			{
-			"nitrogen"		=> { bb_bg::bgset::nitrogen::work(&mut imgs, &mut bg_args) },
-			"plasma"		=> { bb_bg::bgset::plasma::work(&mut imgs, &mut bg_args) }		
+			"nitrogen"		=> { bb_bg::bgset::nitrogen::work(&mut imgs,&mut bg_args) },
+			"plasma"		=> { bb_bg::bgset::plasma::work(&mut imgs,  &mut bg_args) },		
 			"wmsetbg"		=> { bb_bg::bgset::wmsetbg::work(&mut imgs, &mut bg_args) },
 			 _ => println!("Shouldn't be here!"),
 			}
@@ -175,7 +148,6 @@ fn match_args() -> op_args
 
 	/* Current methodology */
     opts.optflag("h", "help", "Print this help menu");
-    // opts.optopt("d", "directories", "", "Full path to image directoy. Seperate multiple directories with a comma.");
     opts.optopt("d", "directories", "", "Full path to image directoy. Seperate multiple directories with a comma.");
     opts.optopt("c", "cmd", "", "Output mechanism... Nitrogen for Cinnamon. Wmsetbg for Fluxbox, Blackbox, and Windowmaker. Plasma for KDE Plasma. All lower case!");
     opts.optopt("t", "time", "", "This is the interval between image changes. 9999 is the max.");
@@ -233,7 +205,7 @@ fn match_args() -> op_args
 		/* Did we really get an interval? Are we pulling it from the config file? Or setting a default? */
 		if (local_interval != 0.to_string())
 			{
-			if( li_len < 5 && is_numeric(&local_interval) )
+			if( li_len < 5 && is_integer(&local_interval) )
     	        { opt_data.interval = local_interval.parse::<u32>().unwrap(); }
         	else
             	{
@@ -267,7 +239,7 @@ fn print_type_of<T>(_: &T)
 	{ println!("{}", std::any::type_name::<T>()); }
 
 
-fn is_numeric(s: &str) -> bool 
+fn is_integer(s: &str) -> bool 
 	{ s.chars().all(|c| c.is_ascii_digit()) }
 
 
