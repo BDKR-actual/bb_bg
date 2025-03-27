@@ -65,11 +65,11 @@ you were interested in however.
 
 There are still some issues/updates that I'm listing below. Feel free to consider this a rough analog for a todo list. 
 
-* Main is too big. Moved image load and filter logic out of main, but there is still some work to do. 
+* Lot's of logic abstracted out of main. 
 * In the last release, the need for the loop in main was in question. That's sorted now. It remains as it supports automatic inclusion of new images that may have been added while the prog was running. When the module exhausts it's list of images, it breaks back out to main where the new image will be found. 
 * The Windowmaker, BlackBox, FluxBox, and KDE Plasma window managers are now supported / working. 
 * Allow deprecation is on for now. Still using rand::Rng::shuffle for now. 
-* If you don't want to compile this yourself, I've included a .deb file that may work for you. 
+* If you don't want to compile this yourself, I've included a .deb file that may work for you. Depends on your architecture / OS. 
 
 This currently works with 1.85.0. 
 
