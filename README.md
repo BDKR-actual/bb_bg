@@ -29,7 +29,7 @@ Options:
     -h, --help          Print this help menu
     -d, --directories Full path to image directoy. Seperate multiple directories with a comma.
     -c, --cmd Output mechanism... Nitrogen for Cinnamon. Wmsetbg for Fluxbox, Blackbox, and Windowmaker. Plasma for KDE Plasma. All lower case!
-    -t, --time This is the interval between image changes
+    -t, --time This is the interval between image changes. Max time is 9999.
     -i, --images Search for images matching name provided
 ```
 
@@ -61,15 +61,15 @@ The match is fuzzy so you don't have to know the exact name of the image or matc
 you were interested in however. 
 
 
-## So where are we?
+## So where are we? / Change log
 
 There are still some issues/updates that I'm listing below. Feel free to consider this a rough analog for a todo list. 
 
-* Main is too big. 
+* Main is too big. Moved image load and filter logic out of main, but there is still some work to do. 
 * In the last release, the need for the loop in main was in question. That's sorted now. It remains as it supports automatic inclusion of new images that may have been added while the prog was running. When the module exhausts it's list of images, it breaks back out to main where the new image will be found. 
 * The Windowmaker, BlackBox, FluxBox, and KDE Plasma window managers are now supported / working. 
-* Allow deprecation is on for now. Still using rand::Rng::shuffle for now. Plan is to write the work methods for wmsetbg and plasma first.
-* If you don't want to compile this yourself, I've included a .deb file. 
+* Allow deprecation is on for now. Still using rand::Rng::shuffle for now. 
+* If you don't want to compile this yourself, I've included a .deb file that may work for you. 
 
 This currently works with 1.85.0. 
 

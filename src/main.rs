@@ -159,7 +159,7 @@ fn print_usage(opts: Options)
 /* Using getopts, check the arguments and shove those into a struct */
 fn match_args() -> op_args
     {
-	let _ltr_arr = "h,d,c,t,i ".split(',');
+	let _ltr_arr = "h,d,c,t,i".split(',');
     let mut opt_data = op_args
         {
         directory:  String::from(""),
@@ -178,7 +178,7 @@ fn match_args() -> op_args
     // opts.optopt("d", "directories", "", "Full path to image directoy. Seperate multiple directories with a comma.");
     opts.optopt("d", "directories", "", "Full path to image directoy. Seperate multiple directories with a comma.");
     opts.optopt("c", "cmd", "", "Output mechanism... Nitrogen for Cinnamon. Wmsetbg for Fluxbox, Blackbox, and Windowmaker. Plasma for KDE Plasma. All lower case!");
-    opts.optopt("t", "time", "", "This is the interval between image changes");
+    opts.optopt("t", "time", "", "This is the interval between image changes. 9999 is the max.");
     opts.optopt("i", "images", "", "Search for images matching name provided");
 
     let matches = match opts.parse(&args[1..])
