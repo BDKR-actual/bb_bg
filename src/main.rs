@@ -16,6 +16,8 @@ extern crate getopts;
 extern crate rand;              // For shuffling the image vector
 
 use crate::rand::Rng;
+
+use anyhow::{Context, Result};
 use std::slice::Iter;
 use getopts::Options;
 use memory_stats::memory_stats;
@@ -27,14 +29,13 @@ use std::fmt;
 use std::fmt::Display;			// For pretty printing debug output
 use std::process::{Command};	// For executing commands
 use std::time::Duration;		// For pausing the application / sleep
-use std::io::{Write, stderr};
+use std::io::{Write, stderr, Error};
 use std::iter;
 use std::iter::Enumerate;
 use std::thread;
 use std::thread::sleep;
 use std::process;
 use std::ptr::{null, null_mut};
-// use std::rc::Rc;
 use std::str::Split;            // Used in config::check_command
 use system::system_output;      // Used in config::check_command
 use libc::{c_char, c_void};
@@ -58,7 +59,7 @@ const DBG_ERR: 		&str		="The debug entry is either missing or malformed. Check t
 
 
 
-fn main()
+fn main() -> Result<(), anyhow::Error>
 	{
 	/* Setup */
     let home_dir		 						= envmnt::get_or_panic("HOME".to_string());
@@ -69,13 +70,12 @@ fn main()
 	let mut rng_otr 							= rand::thread_rng();
 	let mut otr_cntr: u32						= 0;
 	let mut conf_data: HashMap<String, String> 	= HashMap::new();		// Configuration data
-	let tmp_i: u8								= 0;
 	let mut conf_interval: u32					= 0;
 
 	/* Is the config file there? Someone running this as root? */
     bb_bg::bgset::config::can_run(&home_dir);							// The program will exit here if things aren't set
 
-	// let mut bg_args = &mut bb_bg::bgset::bgset_args
+	/* Setup the bg_args dataset */
 	let mut bg_args = bb_bg::bgset::bgset_args
 		{
 		heads:		0,					rebuild:	1,
@@ -83,9 +83,11 @@ fn main()
         show_debug: 0,					interval:	0
 		};
 
-	/* Now let's read the config file and mess around with the interval element */
+	/* Read the config file */
     bb_bg::bgset::config::read_config(opt_data.clone(), &mut conf_data);
-	conf_interval					= conf_data.get("INTERVAL").clone().expect(&INTVL_ERR).to_string().parse().unwrap();
+	
+	/* We need the loop interval */
+	conf_interval					= conf_data.get("INTERVAL").clone().expect(&INTVL_ERR).to_string().parse()?;
 
 	/* Check if an image directory was passed at the command line */
 	if(opt_data.directory.len()>0)	{ fnl_img_dir = opt_data.directory.clone(); }
@@ -112,16 +114,6 @@ fn main()
     /* The program will exit with a message in this function if there is a problem */
 	bb_bg::bgset::config::check_command(&fnl_cmd);
 
-	/* If there is a need */
-	if(bg_args.show_debug==1)
-		{
-		println!("---------------------------------------------------------------------------------");
-		dbg!(&bg_args.heads);
-		println!("\n");
-		dbg!(&conf_data);
-		println!("---------------------------------------------------------------------------------\n\n");
-		}
-
     /* Now get to work for real */
 	loop
 		{
@@ -130,56 +122,15 @@ fn main()
 		let imgs_innr 	= &mut imgs_otr;
 		let rng 		= &mut rng_otr;
 
-		/* Just for testing. Will go away */
-		println!("Just for testing... The loop_cnt val is {}.", loop_cntr);
-
-		/* Check if we got more than one directory */
-		if fnl_img_dir.contains(",")
-			{
-			for ind_dir in (fnl_img_dir.split(","))
-				{
-				let mut final_dir_str = "".to_string();	// This is the directory strng used by read_dir().
-
-				/* Look for the tilde */
-                if( ind_dir.contains("~") )	{ final_dir_str = ind_dir.replace("~", &home_dir); }
-				else						{ final_dir_str = ind_dir.to_string(); }
-
-				/* Push images into the vector */
-			    for multi_path in (fs::read_dir(final_dir_str).expect("\nERROR:Unable to read (one of) the direct(y/ies). Are you sure the directory exists?\n\n"))
-					{
-	        		let cur_str 		= &String::from(multi_path.expect("\nError:There may be an issue with the dir string!\n\n").path().display().to_string());
-					if(bg_args.show_debug==1)	{ println!("The dir string is {}", cur_str); }
-					imgs_innr.push(cur_str.to_string());
-					}
-				}
-			}
-		else
-			{
-			/* Shove the images into a vector */
-		    for path in (fs::read_dir(fnl_img_dir.clone()).expect("\nERROR: Problem encountered while reading from directory.\n\n"))	// <-- Iter for dir to the loop
-				{
-	        	let cur_str 		= String::from(path.unwrap().path().display().to_string());
-			    imgs_innr.push(cur_str);
-				}
-			}
-
-		/* Now filter and shuffle the vector and start looping, re-setting the background at each iteration */
-		let mut imgs = img_scan::filter_images(imgs_innr.to_vec(), &opt_data);
+		/* Image load and filter stuff */
+		img_scan::load_images(&fnl_img_dir, imgs_innr, &home_dir, &bg_args);			/* Read the directories and shove the images into the imgs_innr vector */
+		let mut imgs = img_scan::filter_images(imgs_innr.to_vec(), &opt_data);			/* Now filter and shuffle the vector */ 
 		rng.shuffle(&mut imgs);
 
         /* Show memory output? */
-        if (bg_args.show_debug==1)
-            {
-            if let Some(usage) = memory_stats()
-                {
-                println!("Current physical memory usage: {}", usage.physical_mem);
-                println!("Current virtual memory usage: {}", usage.virtual_mem);
-                }
-            else
-                { println!("Couldn't get the current memory usage :("); }
-            }
+        if (DEV_DEBUG==1) 	{ print_memory_usage(); }
 
-		/* Hand off the data set and arguments to the module */		
+		/* Hand off the data set and arguments to the module responsible for putting images on the desktop */		
 		match fnl_cmd.as_str()
 			{
 			"nitrogen"		=> { bb_bg::bgset::nitrogen::work(&mut imgs, &mut bg_args) },
@@ -208,7 +159,7 @@ fn print_usage(opts: Options)
 /* Using getopts, check the arguments and shove those into a struct */
 fn match_args() -> op_args
     {
-	let _ltr_arr = "h,d,c,t,i".split(',');
+	let _ltr_arr = "h,d,c,t,i ".split(',');
     let mut opt_data = op_args
         {
         directory:  String::from(""),
@@ -275,21 +226,18 @@ fn match_args() -> op_args
         {
         let mut local_interval = match matches.opt_str("t") {
             Some(s) => s,
-            None => 0.to_string(),
+            None => 45.to_string(),
             } as String;
-
-		if(DEV_DEBUG==1) 
-			{ 
-			dbg!(&local_interval);
-			}
-
+		let li_len			= local_interval.len();
+	
+		/* Did we really get an interval? Are we pulling it from the config file? Or setting a default? */
 		if (local_interval != 0.to_string())
 			{
-	        if(local_interval.chars().all(char::is_alphanumeric))
+			if( li_len < 5 && is_numeric(&local_interval) )
     	        { opt_data.interval = local_interval.parse::<u32>().unwrap(); }
         	else
             	{
-	            println!("Non-numeric value entered for the time argument. Using the default interval of 90 seconds.");
+	            println!("Problematic value entered for the time argument. Using the default interval of 90 seconds.");
     	        opt_data.interval = 90;
         	    }
 			}
@@ -299,7 +247,9 @@ fn match_args() -> op_args
 			process::exit(0);
 			}
 
+		if(DEV_DEBUG==1) 	{ dbg!(&local_interval); }
         }
+
 
     /* */
     let input = if !matches.free.is_empty()
@@ -314,6 +264,21 @@ fn match_args() -> op_args
 
 
 fn print_type_of<T>(_: &T)
+	{ println!("{}", std::any::type_name::<T>()); }
+
+
+fn is_numeric(s: &str) -> bool 
+	{ s.chars().all(|c| c.is_ascii_digit()) }
+
+
+fn print_memory_usage()
 	{
-    println!("{}", std::any::type_name::<T>());
-	}
+	if let Some(usage) = memory_stats()
+		{
+		println!("Current physical memory usage: {}", usage.physical_mem);
+		println!("Current virtual memory usage: {}", usage.virtual_mem);
+		}
+	else
+		{ println!("Couldn't get the current memory usage :("); }
+	} 
+

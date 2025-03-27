@@ -1,7 +1,46 @@
 
+
+use crate::bgset;
 use std::collections::HashMap;
+use std::fs;
 use std::process;
 use crate::bgset::op_args;
+
+
+/* Take the passed image directory, home directory, target vector, and bgset args then read the contained images into the vector. */ 
+pub fn load_images( fnl_img_dir: &String, imgs_innr: &mut Vec<String>, home_dir: &String, bg_args: &bgset::bgset_args )
+	{
+	/* Check if we got more than one directory */
+	if fnl_img_dir.contains(",")
+		{
+		for ind_dir in (fnl_img_dir.split(","))
+        	{
+			let mut final_dir_str = "".to_string(); // This is the directory strng used by read_dir().
+
+			/* Look for the tilde */
+			if( ind_dir.contains("~") ) { final_dir_str = ind_dir.replace("~", &home_dir); }
+			else                        { final_dir_str = ind_dir.to_string(); }
+
+			/* Push images into the vector */
+			for multi_path in (fs::read_dir(final_dir_str).expect("\nERROR:Unable to read (one of) the direct(y/ies). Are you sure the directory exists?\n\n"))
+				{
+				let cur_str         = &String::from(multi_path.expect("\nError:There may be an issue with the dir string!\n\n").path().display().to_string());
+				if(bg_args.show_debug==1)   { println!("The dir string is {}", cur_str); }
+				imgs_innr.push(cur_str.to_string());
+				}
+			}
+		}
+	else
+		{
+		/* Shove the images into a vector */
+		for path in (fs::read_dir(fnl_img_dir.clone()).expect("\nERROR: Problem encountered while reading from directory.\n\n"))    // <-- Iter for dir to the loop
+			{
+			let cur_str         = String::from(path.unwrap().path().display().to_string());
+			imgs_innr.push(cur_str);
+			}
+		}
+	}
+
 
 /* 
 Super simplistic check that files from provided directories are images. 
