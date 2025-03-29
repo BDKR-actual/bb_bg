@@ -1,23 +1,20 @@
+
+
 extern crate dirs;
 
 use crate::bgset::op_args;
-use getopts::Options;
 use std::collections::HashMap;
-use std::convert::From;
 use std::fs::File;
 use std::fs::exists;
 use std::env;
-use std::io::prelude::*;
-use std::path::PathBuf;
-use std::ops::Add;
-use std::ops::Mul;
-use std::process;
-use std::{
+use std::
+	{
     io::{prelude::*, BufReader},
     path::Path,
-};
-use std::string::String;
+	};
+use std::process;
 use system::system_output;
+
 
 const CONFIG_PATH: &str = "/.config/bb_bg/config";
 

@@ -11,49 +11,29 @@ let you see what's extra.
 #![allow(unused)]
 #![allow(deprecated)]
 #![warn(non_camel_case_types)]
-extern crate envmnt;
-extern crate getopts;
-extern crate rand;              // For shuffling the image vector
-use crate::rand::Rng;
 
-use anyhow::{Context, Result};
-use std::slice::Iter;
+/* Std lib and Crates */
+extern crate rand;              	// For shuffling the image vector
+use anyhow::{Context, Result};		// Let's leave this since I plan to use it later
 use getopts::Options;
-use memory_stats::memory_stats;
-use std::char;
+use crate::rand::Rng;
 use std::collections::HashMap;
 use std::env;
-use std::fs;					// For reading directories
-use std::fmt;
-use std::fmt::Display;			// For pretty printing debug output
-use std::process::{Command};	// For executing commands
-use std::time::Duration;		// For pausing the application / sleep
-use std::io::{Write, stderr, Error};
-use std::iter;
-use std::iter::Enumerate;
-use std::thread;
-use std::thread::sleep;
 use std::process;
-use std::ptr::{null, null_mut};
-use std::str::Split;            // Used in config::check_command
-use system::system_output;      // Used in config::check_command
-use libc::{c_char, c_void};
 
 /* Modules */
 use bb_bg::bgset::bgset_args;
 use bb_bg::bgset::op_args;
-use bb_bg::bgset::nitrogen;		// For Cinnamon
-use bb_bg::bgset::wmsetbg;		// This supports Windowmake and Black Box
-use bb_bg::bgset::plasma;		// For use with KDE Plash
-use bb_bg::bgset::img_scan;     // Scan the images. Make sure they are. Filter based on search term if requested.
-use bb_bg::bgset::config;       // Config related shizzle. The big one being that this is where the config file is read.
-use bb_bg::bgutils::commands;	// 
+use bb_bg::bgset::nitrogen;			// For Cinnamon
+use bb_bg::bgset::wmsetbg;			// This supports Windowmake and Black Box
+use bb_bg::bgset::plasma;			// For use with KDE Plash
+use bb_bg::bgset::img_scan;     	// Scan the images. Make sure they are. Filter based on search term if requested.
+use bb_bg::bgset::config;       	// Config related shizzle. The big one being that this is where the config file is read.
+use bb_bg::bgutils::commands;		// 
+use bb_bg::bgutils::utils;			// 
 
 /* Some constants to setup */
 const DEV_DEBUG: 	i8 			= 0;
-const IMG_DIR_ERR:	&str		="Expecting a string representing one or more image directories.";
-const BG_EX_ERR: 	&str		="Error getting the name of the process that sets the background image. Check the config file!";
-const INTVL_ERR: 	&str		="Interval data is either not alpha-numeric or missing. Check the config file!";
 const HD_ERR:		&str		="Number of heads (monitors) missing or malformed. Check the config file!";
 const DBG_ERR: 		&str		="The debug entry is either missing or malformed. Check the config file!";
 
@@ -101,7 +81,7 @@ fn main() -> Result<(), anyhow::Error>
 		rng.shuffle(&mut imgs);
 
         /* Show memory output? */
-        if (DEV_DEBUG==1) 	{ print_memory_usage(); }
+        if (DEV_DEBUG==1) 	{ bb_bg::bgutils::utils::print_memory_usage(); }
 
 		/* Hand off the data set and arguments to the module responsible for putting images on the desktop */		
 		match fnl_cmd.as_str()
@@ -205,7 +185,7 @@ fn match_args() -> op_args
 		/* Did we really get an interval? Are we pulling it from the config file? Or setting a default? */
 		if (local_interval != 0.to_string())
 			{
-			if( li_len < 5 && is_integer(&local_interval) )
+			if( li_len < 5 && bb_bg::bgutils::utils::is_integer(&local_interval) )
     	        { opt_data.interval = local_interval.parse::<u32>().unwrap(); }
         	else
             	{
@@ -232,25 +212,4 @@ fn match_args() -> op_args
     /* Return the struct to be used else where */
     opt_data
     }
-
-
-
-fn print_type_of<T>(_: &T)
-	{ println!("{}", std::any::type_name::<T>()); }
-
-
-fn is_integer(s: &str) -> bool 
-	{ s.chars().all(|c| c.is_ascii_digit()) }
-
-
-fn print_memory_usage()
-	{
-	if let Some(usage) = memory_stats()
-		{
-		println!("Current physical memory usage: {}", usage.physical_mem);
-		println!("Current virtual memory usage: {}", usage.virtual_mem);
-		}
-	else
-		{ println!("Couldn't get the current memory usage :("); }
-	} 
 

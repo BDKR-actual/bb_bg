@@ -7,7 +7,6 @@ extern crate rand;                  // For shuffling the image vector
 use rand::Rng;
 use std::thread;
 use std::time::Duration;
-use std::process;
 use std::process::{Command};
 use crate::bgset::bgset_args;
 

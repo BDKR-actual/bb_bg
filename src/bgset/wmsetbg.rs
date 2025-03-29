@@ -9,6 +9,8 @@ use std::thread;
 use std::time::Duration;
 use crate::bgset::bgset_args;
 
+
+
 pub fn work(img_list: &mut Vec<String>, bginfo: &mut bgset_args) 
 	{
     /* Setup */

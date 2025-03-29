@@ -2,15 +2,14 @@
 #![allow(deprecated)]
 
 
-/* For executing commands */
 extern crate rand;              	// For shuffling the image vector
 use rand::Rng;
-use std::convert::AsRef;
-use std::process;
 use std::process::{Command};
 use std::time::Duration;        	// For pausing the application
 use std::thread;
 use crate::bgset::bgset_args;
+
+
 
 /* Where the real work is done. The actually setting of the bkg image will be done in the set_bkg method called from here */
 pub fn work(img_list: &mut Vec<String>, bginfo: &mut bgset_args)
