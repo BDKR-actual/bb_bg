@@ -1,6 +1,6 @@
 [package]
 name = "bb_bg"
-version = "0.1.7"
+version = "0.1.8"
 authors = ["bdkr"]
 edition = "2024"
 license = "Apache 2.0"
@@ -30,3 +30,9 @@ panic = 'unwind'
 incremental = false
 overflow-checks = false
 # libc = "0.2"
+
+[profile.dev]
+debug = true
+
+[build]
+rustflags = ["-Z", "threads=12"]
