@@ -11,7 +11,7 @@ use std::process::{Command};
 use crate::bgset::bgset_args;
 
 
-pub fn work(img_list: &mut Vec<String>, bginfo: &mut bgset_args) 
+pub fn work(img_list: &mut Vec<String>, bginfo: &mut bgset_args)
 	{
     /* Setup */
     let mut ciel:   i32             = img_list.len() as i32;                        // Oft compared against below
@@ -49,12 +49,10 @@ pub fn work(img_list: &mut Vec<String>, bginfo: &mut bgset_args)
 	}
 
 
-
+// qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'var allDesktops = desktops(); for (i=0;i<allDesktops.length;i++) { d = allDesktops[i]; d.currentConfigGroup = ["Wallpaper", "org.kde.image", "General"]; d.writeConfig("Image", "file:///path/to/wallpaper"); }'
 /* The background is actually set here. */
 pub fn set_bkg(bginfo: &bgset_args)
     {
-// qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'var allDesktops = desktops(); for (i=0;i<allDesktops.length;i++) { d = allDesktops[i]; d.currentConfigGroup = ["Wallpaper", "org.kde.image", "General"]; d.writeConfig("Image", "file:///path/to/wallpaper"); }'
-
     let mut output = Command::new("ksetwallpaper");
     output.arg("--file");
     output.arg(&bginfo.img_path);
@@ -67,3 +65,7 @@ pub fn set_bkg(bginfo: &bgset_args)
    	    }
 	}
 
+
+
+
+/* Awesome */

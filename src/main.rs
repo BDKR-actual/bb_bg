@@ -20,6 +20,7 @@ use crate::rand::Rng;
 use std::collections::HashMap;
 use std::env;
 use std::process;
+use std::process::exit;
 
 /* Modules */
 use bb_bg::bgset::bgset_args;
@@ -29,14 +30,13 @@ use bb_bg::bgset::wmsetbg;			// This supports Windowmake and Black Box
 use bb_bg::bgset::plasma;			// For use with KDE Plash
 use bb_bg::bgset::img_scan;     	// Scan the images. Make sure they are. Filter based on search term if requested.
 use bb_bg::bgset::config;       	// Config related shizzle. The big one being that this is where the config file is read.
-use bb_bg::bgutils::commands;		// 
-use bb_bg::bgutils::utils;			// 
+use bb_bg::bgutils::commands;		//
+use bb_bg::bgutils::utils;			//
 
 /* Some constants to setup */
 const DEV_DEBUG: 	i8 			= 0;
 const HD_ERR:		&str		="Number of heads (monitors) missing or malformed. Check the config file!";
 const DBG_ERR: 		&str		="The debug entry is either missing or malformed. Check the config file!";
-
 
 fn main() -> Result<(), anyhow::Error>
 	{
@@ -49,7 +49,7 @@ fn main() -> Result<(), anyhow::Error>
 	let mut rng_otr 							= rand::thread_rng();
 	let mut otr_cntr: u32						= 0;
 	let mut conf_data: HashMap<String, String> 	= HashMap::new();		// Configuration data
-	let mut bg_args = bb_bg::bgset::bgset_args							// Setup the bg_args dataset 
+	let mut bg_args = bb_bg::bgset::bgset_args							// Setup the bg_args dataset
 		{
 		heads:		0,					rebuild:	1,
 		img_path:	"".to_string(),		img_paths:	vec![],
@@ -58,8 +58,8 @@ fn main() -> Result<(), anyhow::Error>
 
 	/* Get some real work done */
 	bb_bg::bgset::config::can_run(&home_dir);																	// Is the config file there? Someone running this as root?
-    bb_bg::bgset::config::read_config(opt_data.clone(), &mut conf_data);										// Read the config file 
-	let comm_list		= bb_bg::bgutils::commands::build_comm_strings(&opt_data, &conf_data);					// Generate our final dir and command strings and the interval value 
+    bb_bg::bgset::config::read_config(opt_data.clone(), &mut conf_data);										// Read the config file
+	let comm_list		= bb_bg::bgutils::commands::build_comm_strings(&opt_data, &conf_data);					// Generate our final dir and command strings and the interval value
 	fnl_img_dir 		= comm_list[0].clone();																	// This and the next two lines finalize some commands and parameters
 	fnl_cmd				= comm_list[1].clone();
 	bg_args.interval	= comm_list[2].clone().parse().unwrap();
@@ -71,30 +71,38 @@ fn main() -> Result<(), anyhow::Error>
 	loop
 		{
 		/* Let's bring something things inside of the scope for this loop */
-		let loop_cntr	= &mut otr_cntr;
-		let imgs_innr 	= &mut imgs_otr;
-		let rng 		= &mut rng_otr;
+		let loop_cntr				= &mut otr_cntr;
+		let imgs_innr 				= &mut imgs_otr;
+		let rng 					= &mut rng_otr;
+		let mut imgs_list_cnt: usize= 0; 
+		let mut innr_list_cnt: usize=0;
 
 		/* Image load and filter stuff */
 		img_scan::load_images(&fnl_img_dir, imgs_innr, &home_dir, &bg_args);			/* Read the directories and shove the images into the imgs_innr vector */
-		let mut imgs = img_scan::filter_images(imgs_innr.to_vec(), &opt_data);			/* Now filter and shuffle the vector */ 
+		let mut imgs = img_scan::filter_images(imgs_innr.to_vec(), &opt_data);			/* Now filter and shuffle the vector */
 		rng.shuffle(&mut imgs);
 
         /* Show memory output? */
         if (DEV_DEBUG==1) 	{ bb_bg::bgutils::utils::print_memory_usage(); }
 
-		/* Hand off the data set and arguments to the module responsible for putting images on the desktop */		
+		/* Hand off the data set and arguments to the module responsible for putting images on the desktop */
 		match fnl_cmd.as_str()
 			{
 			"nitrogen"		=> { bb_bg::bgset::nitrogen::work(&mut imgs,&mut bg_args) },
-			"plasma"		=> { bb_bg::bgset::plasma::work(&mut imgs,  &mut bg_args) },		
+			"plasma"		=> { bb_bg::bgset::plasma::work(&mut imgs,  &mut bg_args) },
 			"wmsetbg"		=> { bb_bg::bgset::wmsetbg::work(&mut imgs, &mut bg_args) },
 			 _ => println!("Shouldn't be here!"),
 			}
 
 		/* If we find ourselves back out here, we are looking to rebuild the image vectors. Empty them first! */
+		innr_list_cnt = imgs_innr.len();
 		imgs_innr.clear();
+		imgs_innr.reserve(innr_list_cnt);
+
+		imgs_list_cnt = imgs.len();
 		imgs.clear();
+		imgs.reserve(imgs_list_cnt);
+
 		*loop_cntr += 1;
 		}
 	}
@@ -181,7 +189,7 @@ fn match_args() -> op_args
             None => 45.to_string(),
             } as String;
 		let li_len			= local_interval.len();
-	
+
 		/* Did we really get an interval? Are we pulling it from the config file? Or setting a default? */
 		if (local_interval != 0.to_string())
 			{
@@ -212,4 +220,3 @@ fn match_args() -> op_args
     /* Return the struct to be used else where */
     opt_data
     }
-
