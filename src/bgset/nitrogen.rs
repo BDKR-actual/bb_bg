@@ -38,7 +38,7 @@ pub fn work(img_list: &mut Vec<String>, bginfo: &mut bgset_args)
                 {
                 pushed = img_list.get(x as usize).unwrap().to_string();             // Grab an item from the vector. We store it as we may need to push it again.
 				bginfo.img_paths.push( pushed.clone() );							// Push the image string into the struct element
-                x += 1;                                                              // ... and increment.
+                x += 1;                                                             // ... and increment.
 
                 // Are we at the end of the list? If we hit the end of the list here, we are likely to end up with an image in the vector twice.
                 if(x >= ciel)
@@ -59,6 +59,8 @@ pub fn work(img_list: &mut Vec<String>, bginfo: &mut bgset_args)
             thread::sleep(Duration::from_secs((bginfo.interval as u32).into()));
             if (reached == 1)																// If we are at the end of the list
                 {
+				if(bginfo.rebuild == 1)	{ return; }
+
                 /* The img_list var below has 2 levels of indirection (double references) before getting here. We need to
                 dereference at least level to satify the shuffle method argument requirements. */
 				rng.shuffle(&mut *img_list);
