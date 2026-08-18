@@ -43,6 +43,8 @@ fn main() -> Result<(), anyhow::Error>
 	/* Setup */
     let home_dir		 						= envmnt::get_or_panic("HOME".to_string());
 	let mut fnl_img_dir 						= "".to_string();	    // Setup the image directory string
+	let mut fnl_dir_q: Vec<String>				= vec![];				// Instead of going recursive, put found directories here
+	let mut lcl_dir_q: Vec<String>				= vec![];				// A local variant of the above
 	let mut fnl_cmd								= "".to_string();	    // What command will be used later
 	let mut opt_data	 						= match_args();		    // Let's look at the command line arguments
 	let mut imgs_otr: Vec<String>				= vec![];				// Images are stored here
@@ -75,15 +77,49 @@ fn main() -> Result<(), anyhow::Error>
 		let imgs_innr 				= &mut imgs_otr;
 		let rng 					= &mut rng_otr;
 		let mut imgs_list_cnt: usize= 0; 
-		let mut innr_list_cnt: usize=0;
+		let mut innr_list_cnt: usize= 0;
 
 		/* Image load and filter stuff */
-		img_scan::load_images(&fnl_img_dir, imgs_innr, &home_dir, &bg_args);			/* Read the directories and shove the images into the imgs_innr vector */
-		let mut imgs = img_scan::filter_images(imgs_innr.to_vec(), &opt_data);			/* Now filter and shuffle the vector */
+		/* *******************************************************/
+		/*			 	L33T 5H1ZZL3 H3R3!!!! LOL				 */
+		/* *******************************************************/
+		/*
+		Rather than recurse, which I'd image can be problematic for 
+		the referrences at each dive lower, this algo first makes 
+		an initial pass. In it, it makes a list of items that will 
+		need to checked using the same function. 	
+
+		Now as it loops over the list of items gathered from the first pass, 
+		it does the same thing. Makes another list of things that needs 
+		to be revisited or checked. 
+
+		When that list becomes empty, we break out of the loop. 
+		*/	
+		img_scan::load_images(&fnl_img_dir, imgs_innr, &home_dir, &bg_args, &mut fnl_dir_q);	/* Read the directory(ies) and shove the images into the imgs_innr vector */
+		lcl_dir_q.append(&mut fnl_dir_q);
+		loop
+			{
+			for new_dir in &lcl_dir_q
+				{ img_scan::load_images(&new_dir, imgs_innr, &home_dir, &bg_args, &mut fnl_dir_q); }
+			if(fnl_dir_q.len()==0)
+				{ break; }
+			else
+				{ 
+				lcl_dir_q.clear();
+				lcl_dir_q.append(&mut fnl_dir_q); 
+				}
+			}
+
+		/* Now filter and shuffle the vector */		
+		let mut imgs = img_scan::filter_images(imgs_innr.to_vec(), &opt_data);
 		rng.shuffle(&mut imgs);
 
         /* Show memory output? */
-        if (DEV_DEBUG==1) 	{ bb_bg::bgutils::utils::print_memory_usage(); }
+        if (DEV_DEBUG==1) 	
+			{
+			dbg!(&imgs.len()); 
+			bb_bg::bgutils::utils::print_memory_usage(); 
+			}
 
 		/* Hand off the data set and arguments to the module responsible for putting images on the desktop */
 		match fnl_cmd.as_str()

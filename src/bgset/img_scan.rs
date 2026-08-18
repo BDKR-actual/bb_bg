@@ -7,7 +7,7 @@ use crate::bgset::op_args;
 
 
 /* Take the passed image directory, home directory, target vector, and bgset args then read the contained images into the vector. */ 
-pub fn load_images( fnl_img_dir: &String, imgs_innr: &mut Vec<String>, home_dir: &String, bg_args: &bgset::bgset_args )
+pub fn load_images( fnl_img_dir: &String, imgs_innr: &mut Vec<String>, home_dir: &String, bg_args: &bgset::bgset_args, dir_list: &mut Vec<String> )
 	{
 	/* Check if we got more than one directory */
 	if fnl_img_dir.contains(",")
@@ -35,7 +35,11 @@ pub fn load_images( fnl_img_dir: &String, imgs_innr: &mut Vec<String>, home_dir:
 		for path in (fs::read_dir(fnl_img_dir.clone()).expect("\nERROR: Problem encountered while reading from directory.\n\n"))    // <-- Iter for dir to the loop
 			{
 			let cur_str         = String::from(path.unwrap().path().display().to_string());
-			imgs_innr.push(cur_str);
+
+			if(is_directory(&cur_str))
+				{ dir_list.push(cur_str); }
+			else
+				{ imgs_innr.push(cur_str); 	}
 			}
 		}
 	}
@@ -96,3 +100,13 @@ pub fn filter_images(raw_list: Vec<String>, opt_data: &op_args) -> Vec<String>
 	}
 
 
+
+fn is_directory(path: &str) -> bool 
+	{
+    let metadata = fs::symlink_metadata(path);
+    match metadata 
+		{
+        Ok(meta) => meta.is_dir(),
+        Err(_) => false,
+    	}
+	}
