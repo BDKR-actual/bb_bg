@@ -65,6 +65,7 @@ you were interested in however.
 
 There are still some issues/updates that I'm listing below. Feel free to consider this a rough analog for a todo list. 
 
+* 08:17:2026 : Now main and img_scan work together to get all images from a directory recursively without using recursion.
 * Lot's of unused "use" and "extern' lines removed from main.rs. Moving logic out to the modules meant they were no longer needed in main.rs.
 * Utils modes created for little things. 
 * In the last release, the need for the loop in main was in question. That's sorted now. It remains as it supports automatic inclusion of new images that may have been added while the prog was running. When the module exhausts it's list of images, it breaks back out to main where the new image will be found in the outer loop. 
