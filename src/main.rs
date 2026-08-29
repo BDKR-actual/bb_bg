@@ -32,11 +32,14 @@ use bb_bg::bgset::img_scan;     	// Scan the images. Make sure they are. Filter 
 use bb_bg::bgset::config;       	// Config related shizzle. The big one being that this is where the config file is read.
 use bb_bg::bgutils::commands;		//
 use bb_bg::bgutils::utils;			//
+use std::time::Instant;				// For benchmarking
+use std::hint::black_box;			// For benchmarking
 
 /* Some constants to setup */
-const DEV_DEBUG: 	i8 			= 0;
+const DEV_DEBUG: 	i8 			= 1;
 const HD_ERR:		&str		="Number of heads (monitors) missing or malformed. Check the config file!";
 const DBG_ERR: 		&str		="The debug entry is either missing or malformed. Check the config file!";
+
 
 fn main() -> Result<(), anyhow::Error>
 	{
@@ -57,6 +60,13 @@ fn main() -> Result<(), anyhow::Error>
 		img_path:	"".to_string(),		img_paths:	vec![],
         show_debug: 0,					interval:	0
 		};
+	let mut q_switch: u8						= 1;
+
+	/* The below stuff is just a daydream. Will work on later */ /*
+	let mut vec_stack: Vec<Vec<String>>			= vec![];
+	for i in 1..200
+		{ vec_stack.push( (vec![]) ); }
+	*/
 
 	/* Get some real work done */
 	bb_bg::bgset::config::can_run(&home_dir);																	// Is the config file there? Someone running this as root?
@@ -93,29 +103,52 @@ fn main() -> Result<(), anyhow::Error>
 		it does the same thing. Makes another list of things that needs 
 		to be revisited or checked. 
 
+		Unlike before where the same vector was passed into load_images, 
+		we now use two different vectors and alternate. 
+		This saves 
+		having to do call append. Just clear. 
+
 		When that list becomes empty, we break out of the loop. 
 		*/	
-		img_scan::load_images(&fnl_img_dir, imgs_innr, &home_dir, &bg_args, &mut fnl_dir_q);	/* Read the directory(ies) and shove the images into the imgs_innr vector */
-		lcl_dir_q.append(&mut fnl_dir_q);
+	    /* Start the timer if benchmarking */
+   		// let start = Instant::now();
+
+		img_scan::load_images(&fnl_img_dir, imgs_innr, &home_dir, &bg_args, &mut fnl_dir_q);	// Read the directory(ies) and shove the images into the imgs_innr vector
 		loop
 			{
-			for new_dir in &lcl_dir_q
-				{ img_scan::load_images(&new_dir, imgs_innr, &home_dir, &bg_args, &mut fnl_dir_q); }
-			if(fnl_dir_q.len()==0)
-				{ break; }
-			else
-				{ 
-				lcl_dir_q.clear();
-				lcl_dir_q.append(&mut fnl_dir_q); 
+			if(q_switch==1)
+				{
+				for new_dir in &fnl_dir_q
+					{ img_scan::load_images(&new_dir, imgs_innr, &home_dir, &bg_args, &mut lcl_dir_q); }
+				fnl_dir_q = vec![];
+				q_switch=2;
 				}
+			else
+				{
+				for new_dir in &lcl_dir_q
+					{ img_scan::load_images(&new_dir, imgs_innr, &home_dir, &bg_args, &mut fnl_dir_q); }
+				lcl_dir_q = vec![];
+				q_switch=1;
+				}
+		
+	        if (DEV_DEBUG==1 || bg_args.show_debug==1) 	
+				{ println!("{} <==> {}", fnl_dir_q.len(), lcl_dir_q.len()); }
+		
+			/* Are we done? */
+			if(fnl_dir_q.len()==0 && lcl_dir_q.len()==0)
+				{ break; }
 			}
+	
+	    /* Calculate elapsed time if benchmarking */
+   		// let duration = start.elapsed();
+	    // println!("Time taken: {:?}", duration);
 
 		/* Now filter and shuffle the vector */		
 		let mut imgs = img_scan::filter_images(imgs_innr.to_vec(), &opt_data);
 		rng.shuffle(&mut imgs);
 
         /* Show memory output? */
-        if (DEV_DEBUG==1) 	
+        if (DEV_DEBUG==1 || bg_args.show_debug==1) 	
 			{
 			dbg!(&imgs.len()); 
 			bb_bg::bgutils::utils::print_memory_usage(); 
@@ -243,7 +276,8 @@ fn match_args() -> op_args
 			process::exit(0);
 			}
 
-		if(DEV_DEBUG==1) 	{ dbg!(&local_interval); }
+		if(DEV_DEBUG==1) 	
+			{ dbg!(&local_interval); }
         }
 
 

@@ -24,7 +24,7 @@ pub fn load_images( fnl_img_dir: &String, imgs_innr: &mut Vec<String>, home_dir:
 			for multi_path in (fs::read_dir(final_dir_str).expect("\nERROR:Unable to read (one of) the direct(y/ies). Are you sure the directory exists?\n\n"))
 				{
 				let cur_str         = &String::from(multi_path.expect("\nError:There may be an issue with the dir string!\n\n").path().display().to_string());
-				if(bg_args.show_debug==1)   { println!("The dir string is {}", cur_str); }
+				// if(bg_args.show_debug==1)   { println!("The dir string is {}", cur_str); }
 				imgs_innr.push(cur_str.to_string());
 				}
 			}
