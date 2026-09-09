@@ -36,7 +36,7 @@ use std::time::Instant;				// For benchmarking
 use std::hint::black_box;			// For benchmarking
 
 /* Some constants to setup */
-const DEV_DEBUG: 	i8 			= 1;
+const DEV_DEBUG: 	i8 			= 0;
 const HD_ERR:		&str		="Number of heads (monitors) missing or malformed. Check the config file!";
 const DBG_ERR: 		&str		="The debug entry is either missing or malformed. Check the config file!";
 
