@@ -54,19 +54,13 @@ fn main() -> Result<(), anyhow::Error>
 	let mut rng_otr 							= rand::thread_rng();
 	let mut otr_cntr: u32						= 0;
 	let mut conf_data: HashMap<String, String> 	= HashMap::new();		// Configuration data
+	let mut q_switch: u8						= 1;					// Used while (re)building the image list
 	let mut bg_args = bb_bg::bgset::bgset_args							// Setup the bg_args dataset
 		{
-		heads:		0,					rebuild:	1,
-		img_path:	"".to_string(),		img_paths:	vec![],
-        show_debug: 0,					interval:	0
+		heads:		0,				rebuild:	1,
+		img_path:	"".to_string(),	img_paths:	vec![],
+        show_debug: 0,				interval:	0
 		};
-	let mut q_switch: u8						= 1;
-
-	/* The below stuff is just a daydream. Will work on later */ /*
-	let mut vec_stack: Vec<Vec<String>>			= vec![];
-	for i in 1..200
-		{ vec_stack.push( (vec![]) ); }
-	*/
 
 	/* Get some real work done */
 	bb_bg::bgset::config::can_run(&home_dir);																	// Is the config file there? Someone running this as root?
@@ -90,9 +84,6 @@ fn main() -> Result<(), anyhow::Error>
 		let mut innr_list_cnt: usize= 0;
 
 		/* Image load and filter stuff */
-		/* *******************************************************/
-		/*			 	L33T 5H1ZZL3 H3R3!!!! LOL				 */
-		/* *******************************************************/
 		/*
 		Rather than recurse, which I'd image can be problematic for 
 		the referrences at each dive lower, this algo first makes 
@@ -105,14 +96,10 @@ fn main() -> Result<(), anyhow::Error>
 
 		Unlike before where the same vector was passed into load_images, 
 		we now use two different vectors and alternate. 
-		This saves 
-		having to do call append. Just clear. 
+		This saves having to do call append. Just clear. 
 
 		When that list becomes empty, we break out of the loop. 
 		*/	
-	    /* Start the timer if benchmarking */
-   		// let start = Instant::now();
-
 		img_scan::load_images(&fnl_img_dir, imgs_innr, &home_dir, &bg_args, &mut fnl_dir_q);	// Read the directory(ies) and shove the images into the imgs_innr vector
 		loop
 			{
@@ -131,7 +118,7 @@ fn main() -> Result<(), anyhow::Error>
 				q_switch=1;
 				}
 		
-	        if (DEV_DEBUG==1 || bg_args.show_debug==1) 	
+	        if (DEV_DEBUG==1 || bg_args.show_debug==1) 
 				{ println!("{} <==> {}", fnl_dir_q.len(), lcl_dir_q.len()); }
 		
 			/* Are we done? */
@@ -139,10 +126,6 @@ fn main() -> Result<(), anyhow::Error>
 				{ break; }
 			}
 	
-	    /* Calculate elapsed time if benchmarking */
-   		// let duration = start.elapsed();
-	    // println!("Time taken: {:?}", duration);
-
 		/* Now filter and shuffle the vector */		
 		let mut imgs = img_scan::filter_images(imgs_innr.to_vec(), &opt_data);
 		rng.shuffle(&mut imgs);
